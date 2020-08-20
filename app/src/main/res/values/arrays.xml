@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="itemsArray">
+        <item>Suspected rodent damage</item>
+        <item>Proven rodent damage</item>
+        <item>Underground explosion</item>
+        <item>Splice issues</item>
+        <item>3rd party street-work damage</item>
+        <item>Local authority neglect</item>
+        <item>Partner damage working on VM behalf</item>
+        <item>Other (include in your description)</item>
+    </string-array>
+    <string-array name="dropdownOptions">dropdownOptions</string-array>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+</resources>

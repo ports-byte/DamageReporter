@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.example.fibredamage">
+
+    <uses-feature
+            android:name="android.hardware.camera"
+            android:required="false"/>
+
+    <application
+            android:allowBackup="true"
+            android:icon="@mipmap/exclogo"
+            android:label="@string/appName"
+            android:roundIcon="@mipmap/exclogo_round"
+            android:supportsRtl="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+        <activity
+                android:name=".Settings"
+                android:label="@string/title_activity_settings"
+                android:theme="@style/NoActionBar">
+        </activity>
+        <activity
+                android:name=".AboutActivity"
+                android:label="@string/about"
+                android:parentActivityName=".MainActivity"
+                android:theme="@style/NoActionBar">
+        </activity>
+
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="com.example.fibredamage.fileprovider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/filepaths"/>
+        </provider>
+
+        <activity
+                android:name=".DisplayMessageActivity"
+                android:parentActivityName=".MainActivity">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.example.fibredamage.MainActivity"/>
+        </activity>
+        <activity
+                android:name=".MainActivity"
+                android:label="@string/appName"
+                android:theme="@style/Theme.AppCompat.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

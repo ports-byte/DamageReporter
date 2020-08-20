@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="edit_message">What happened?</string>
+    <string name="button_send">Send</string>
+    <string name="your_email">Your email</string>
+    <string name="dmg_address">Damage address</string>
+    <string name="engineerName">Your name</string>
+    <string name="engineerEmail">Your email</string>
+    <string name="sendMail">SEND</string>
+    <string name="generatePDF">GENERATE</string>
+    <string name="nextBtn">NEXT</string>
+    <string name="appName">VM Damage Reporter</string>
+    <string name="VIEW">viewPDF</string>
+    <string name="viewPDF">VIEW</string>
+    <string name="aboutSubText">
+        <![CDATA[![CDATA[Written by Ben Fortune <br> Tested in Intellij <br /> ben.fortune@virginmedia.co.uk]]></string>
+    <string name="title_activity_about">AboutActivity</string>
+    <string name="about">About</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="darkMode">Dark mode</string>
+    <string name="settingExperimental">Experimental features</string>
+    <string name="sendCopyToEng">Send copy of PDF to yourself</string>
+    <string name="sendCopyToManager">Send copy to lin e manager</string>
+    <string name="sendCopyToLineManager">Send copy to line manager</string>
+    <string name="lineManagerEmail">Line manager email</string>
+    <string name="encryptPDF">Encrypt PDF</string>
+</resources>
