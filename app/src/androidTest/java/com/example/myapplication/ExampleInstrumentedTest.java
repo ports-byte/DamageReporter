@@ -1,4 +1,4 @@
-package com.example.fibredamage;
+package com.example.myapplication;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;

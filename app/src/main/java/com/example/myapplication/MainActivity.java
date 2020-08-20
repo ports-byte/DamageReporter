@@ -1,30 +1,27 @@
-package com.example.fibredamage;
+package com.example.myapplication;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.Editable;
-import android.text.Layout;
-import android.text.TextWatcher;
-import android.view.ViewTreeObserver;
 import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import static com.example.fibredamage.Constants.noPictures;
+import static com.example.myapplication.Constants.noPictures;
 
 /**
- * TODO: Create a PDF with the textfield strings (seems easy enough)
- * TODO: Add camera to floating action point and test properly using android - doesnt show or do anything on camera open
- * TODO: Add previous or current taken pictures to the imageview elements
+ * DONE: Correct permissions added for URI access for download folder (removed strictmode)
+ *       Added encryption option
+ *       Removed redundant stuff
+ *
+ * todo: Correct the layout of the pdf so that words arent cut off at the end of the line
  */
 
 public class MainActivity extends AppCompatActivity {
@@ -157,25 +154,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendMessage() {
-
-        /*final EditText addressField = (EditText) findViewById(R.id.address);
-        addressField.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                // Remove immediately so it only fires once
-                addressField.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-
-                // View should be laid out, including text placement
-                final Layout layout = addressField.getLayout();
-                float maxLineWidth = 0;
-
-                // Loop over all the lines and do whatever you need with
-                // the width of the line
-                for (int i = 0; i < layout.getLineCount(); i++) {
-                    maxLineWidth = Math.max(maxLineWidth, layout.getLineWidth(i));
-                }
-            }
-        });*/
         // stress the importance of adding pictures
         //todo add spaces for readability on submit
         try {

@@ -1,16 +1,9 @@
-package com.example.fibredamage;
+package com.example.myapplication;
 
 import android.os.Bundle;
-import android.text.InputType;
-import android.widget.EditText;
-import android.widget.RadioGroup;
-import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import android.view.View;
 
 public class Settings extends AppCompatActivity {
 

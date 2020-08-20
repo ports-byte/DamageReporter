@@ -1,4 +1,4 @@
-package com.example.fibredamage;
+package com.example.myapplication;
 
 import android.graphics.Bitmap;
 

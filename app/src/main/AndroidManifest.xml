@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.fibredamage">
+          package="com.example.myapplication">
 
     <uses-feature
             android:name="android.hardware.camera"
@@ -14,36 +14,36 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity
-                android:name=".Settings"
+                android:name="com.example.myapplication.Settings"
                 android:label="@string/title_activity_settings"
                 android:theme="@style/NoActionBar">
         </activity>
         <activity
-                android:name=".AboutActivity"
+                android:name="com.example.myapplication.AboutActivity"
                 android:label="@string/about"
-                android:parentActivityName=".MainActivity"
+                android:parentActivityName="com.example.myapplication.MainActivity"
                 android:theme="@style/NoActionBar">
         </activity>
 
         <provider
                 android:name="androidx.core.content.FileProvider"
-                android:authorities="com.example.fibredamage.fileprovider"
+                android:authorities="com.example.myapplication.provider"
                 android:exported="false"
                 android:grantUriPermissions="true">
             <meta-data
                     android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/filepaths"/>
+                    android:resource="@xml/file_paths"/>
         </provider>
 
         <activity
-                android:name=".DisplayMessageActivity"
-                android:parentActivityName=".MainActivity">
+                android:name="com.example.myapplication.DisplayMessageActivity"
+                android:parentActivityName="com.example.myapplication.MainActivity">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
-                    android:value="com.example.fibredamage.MainActivity"/>
+                    android:value="com.example.myapplication.MainActivity"/>
         </activity>
         <activity
-                android:name=".MainActivity"
+                android:name="com.example.myapplication.MainActivity"
                 android:label="@string/appName"
                 android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>

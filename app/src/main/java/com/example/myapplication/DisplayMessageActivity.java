@@ -1,52 +1,38 @@
-package com.example.fibredamage;
+package com.example.myapplication;
 
 import android.Manifest;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.view.View;
-import android.webkit.MimeTypeMap;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import androidx.constraintlayout.solver.widgets.Rectangle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import com.google.android.material.snackbar.Snackbar;
-import com.tom_roush.pdfbox.multipdf.Overlay;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
-import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
-import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
-import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.example.fibredamage.Constants.noPictures;
+import static com.example.myapplication.Constants.noPictures;
 
 public class DisplayMessageActivity extends AppCompatActivity {
     File root;
@@ -81,35 +67,40 @@ public class DisplayMessageActivity extends AppCompatActivity {
     public void onClick(View v) {
         Date date = new Date();
         SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");
-        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-        StrictMode.setVmPolicy(builder.build());
+        try {
+            // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
+            if (ContextCompat.checkSelfPermission(DisplayMessageActivity.this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(DisplayMessageActivity.this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            }
+
         Snackbar.make(v, "Attempting to open PDF", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
         File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdfFile.format(date) + ".pdf");  // -> filename = maven.pdf
-        Uri path = Uri.fromFile(pdfFile);
+        Uri path = FileProvider.getUriForFile(DisplayMessageActivity.this, "com.example.myapplication.provider", pdfFile);
         Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
         pdfIntent.setDataAndType(path, "application/pdf");
         pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        try{
             startActivity(pdfIntent);
-        }catch(ActivityNotFoundException e){
-            Toast.makeText(this, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
+        }catch(Exception e){
+            Toast.makeText(this, "No application available to view PDF - error: " + e, Toast.LENGTH_SHORT).show();
         }
     }
 
     public void send(View v) {
-        /**
-         * Strictmode is insecure and needs to be changed before deployment - change to fileprovider with correct permissions
-         */
-        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-        StrictMode.setVmPolicy(builder.build());
-        // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
-        if (ContextCompat.checkSelfPermission(DisplayMessageActivity.this,
-                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        try {
+            // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
+            if (ContextCompat.checkSelfPermission(DisplayMessageActivity.this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(DisplayMessageActivity.this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                ActivityCompat.requestPermissions(DisplayMessageActivity.this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            }
+        } catch (Exception d) {
+            Toast.makeText(this, "Couldn't access local files. Error: " + d, Toast.LENGTH_LONG).show();
         }
         try {
             Date date = new Date();
@@ -118,9 +109,9 @@ public class DisplayMessageActivity extends AppCompatActivity {
             //String filename = "VMGeneratedDoc.pdf";
             root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             assetManager = getAssets();
-            File filelocation = new File(root, filename);
-            Uri path = Uri.fromFile(filelocation);
-            // Uri path = FileProvider.getUriForFile(getApplicationContext(), getPackageName()+".fileprovider", filelocation);
+            SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");
+            File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdfFile.format(date) + ".pdf");  // -> filename = maven.pdf
+            Uri path = FileProvider.getUriForFile(DisplayMessageActivity.this, "com.example.myapplication.provider", pdfFile);
 
 
             Intent intent = new Intent(Intent.ACTION_SEND);
@@ -249,7 +240,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
             contentStream.newLine();
             contentStream.newLine();
             if (items.get(3).length()<60) {
-                contentStream.showText("Incident description: (not in else) " + items.get(3)); //TODO EZCLAP - little buggy (need to complete the whole word before wrapping text and reset the counter)
+                contentStream.showText("Incident description: " + items.get(3));
             } else {
                 contentStream.showText("Incident description: ");
                 contentStream.newLine();
@@ -288,14 +279,14 @@ public class DisplayMessageActivity extends AppCompatActivity {
 
             contentStream.close();
 
-            /**Settings: enable encryption*/
+            /**Settings: enable encryption
             int keyLength = 128;
             AccessPermission ap = new AccessPermission();
 
             StandardProtectionPolicy spp = new  StandardProtectionPolicy(pdfPass, pdfPass, ap);
             spp.setEncryptionKeyLength(keyLength);
             spp.setPermissions(ap);
-            document.protect(spp);
+            document.protect(spp);*/
 
             //Save file with todays date
             SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");

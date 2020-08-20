@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:showIn="@layout/activity_about"
-        tools:context="com.example.fibredamage.AboutActivity">
+        tools:context="com.example.myapplication.AboutActivity">
 
     <TextView
             android:text="Damage Reporter"
