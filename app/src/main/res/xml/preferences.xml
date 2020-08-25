@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+            android:title="Security">
+
+    </PreferenceCategory>
+    <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:title="Encrypt PDF" android:key="encrypt_pdf" app:defaultValue="false"
+            app:summary="Turns on encryption when generating the file. Password is automatically added to the email."
+            android:id="@+id/darkMode"/>
+    <PreferenceCategory
+            android:title="Administration">
+
+    </PreferenceCategory>
+    <CheckBoxPreference
+            android:defaultValue="false"
+            android:title="Include line manager" android:key="check_box_preference_1"/>
+    <CheckBoxPreference
+            android:defaultValue="true"
+            android:title="Delete files after sending" android:key="delete_files"/>
+
+</PreferenceScreen>

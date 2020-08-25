@@ -6,13 +6,14 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -20,6 +21,8 @@ import com.google.android.material.snackbar.Snackbar;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
+import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
@@ -30,11 +33,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Random;
 
+import static com.example.myapplication.Constants.encryptPDF;
 import static com.example.myapplication.Constants.noPictures;
 
-public class DisplayMessageActivity extends AppCompatActivity {
+public class DisplayMessageActivity extends AppCompatActivity  {
     File root;
     AssetManager assetManager;
     TextView tv;
@@ -46,29 +53,31 @@ public class DisplayMessageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_message);
+        ActionBar actionBar = this.getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         //get intent that started this activity and extra the string (extra message)
         Intent intent = getIntent();
         finalItemsString = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
-        /**arr1 = intent.getByteArrayExtra("imageView");
-         map = BitmapFactory.decodeByteArray(arr1,0, arr1.length);
-         imageView.setImageBitmap(map);*/
 
         //quickly generate a password to be used
         pdfPass = getSaltString();
 
         //capture the layout textview and set the string as its text
         TextView textView = findViewById(R.id.textView);
-        textView.setText("You are about to submit the following: " + finalItemsString);
-        View v = null;
-        setup(v);
+        if (encryptPDF) { textView.setText("You are about to submit the following: " + finalItemsString + "\n\nPassword: " + pdfPass); }
+        else { textView.setText("You are about to submit the following: " + finalItemsString); }
+
+        setup(null);
     }
 
     public void onClick(View v) {
         Date date = new Date();
         SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");
         try {
-            // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
             if (ContextCompat.checkSelfPermission(DisplayMessageActivity.this,
                     Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
@@ -92,7 +101,6 @@ public class DisplayMessageActivity extends AppCompatActivity {
 
     public void send(View v) {
         try {
-            // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
             if (ContextCompat.checkSelfPermission(DisplayMessageActivity.this,
                     Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
@@ -106,21 +114,20 @@ public class DisplayMessageActivity extends AppCompatActivity {
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
             String filename = "VMGeneratedDoc" + sdf.format(date) + ".pdf";
-            //String filename = "VMGeneratedDoc.pdf";
             root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             assetManager = getAssets();
             SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");
             File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdfFile.format(date) + ".pdf");  // -> filename = maven.pdf
             Uri path = FileProvider.getUriForFile(DisplayMessageActivity.this, "com.example.myapplication.provider", pdfFile);
 
-
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             String[] recipients = {"xyz@virginmedia.com"};
             intent.putExtra(Intent.EXTRA_EMAIL, recipients);
             intent.putExtra(Intent.EXTRA_SUBJECT, "Report on fibre damage");
-            intent.putExtra(Intent.EXTRA_TEXT, "Please see the attached PDF for a fibre damage report. \n\n Filename: " + filename + "\n\n  Password: " + pdfPass);
-            intent.putExtra(Intent.EXTRA_CC, "ccAddress@virginmedia.co.uk"); // doesnt work
+            if (encryptPDF) { intent.putExtra(Intent.EXTRA_TEXT, "Please see the attached PDF for a fibre damage report. \n\n Filename: " + filename + "\n\n  Password: " + pdfPass); }
+            else { intent.putExtra(Intent.EXTRA_TEXT, "Please see the attached PDF for a fibre damage report. \n\n Filename: " + filename); }
+            intent.putExtra(Intent.EXTRA_CC, "ccAddress@virginmedia.co.uk"); // doesn't work
             intent.putExtra(Intent.EXTRA_STREAM, path);
             intent.setType("text/html");
             startActivity(Intent.createChooser(intent, "Choose an app to send the report from (i.e. Boxer)"));
@@ -129,20 +136,16 @@ public class DisplayMessageActivity extends AppCompatActivity {
         }
     }
 
-    // create pdf starts here
-    //setup
     private void setup(View v) {
         //enable android style asset loading
         PDFBoxResourceLoader.init(getApplicationContext());
-        // Find the root of the external storage.
+        // Find the root of the external storage
         root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         assetManager = getAssets();
-        tv = (TextView) findViewById(R.id.tv);
+        tv = findViewById(R.id.tv);
 
-        // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
         if (ContextCompat.checkSelfPermission(DisplayMessageActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
             ActivityCompat.requestPermissions(DisplayMessageActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
@@ -153,7 +156,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
         }
     }
 
-    // creates pdf from scratch and save to a file
+    // creates pdf, save to a download directory
     public void createPDF(View v) throws IOException {
         PDDocument document = new PDDocument();
         PDPage page = new PDPage();
@@ -169,7 +172,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-            //wrap text for pdf formatting - todo - read until whitespace until you newline
+            //wrap text for pdf formatting - todo - read until whitespace until newline
             ArrayList<String> itemDescArray = new ArrayList<>();
             int index=0;
             if (items.get(3).length()>60) {
@@ -254,7 +257,6 @@ public class DisplayMessageActivity extends AppCompatActivity {
             contentStream.addRect(0, 250, 1000, 5);
             contentStream.fill();
 
-            //
             if (noPictures != true) {
                 Bitmap image = Constants.photoFinishBitmap;
                 Bitmap image2 = Constants.photoFinishBitmap2;
@@ -276,19 +278,23 @@ public class DisplayMessageActivity extends AppCompatActivity {
                     contentStream.drawImage(ximage4, ximage1.getWidth() * 3 + 80, 50, ximage4.getWidth(), ximage4.getHeight());
                 }
             }
-
             contentStream.close();
 
-            /**Settings: enable encryption
-            int keyLength = 128;
-            AccessPermission ap = new AccessPermission();
+            if (encryptPDF) {
+                Toast.makeText(this, "Encrypting...", Toast.LENGTH_SHORT).show();
+                //Settings: enable encryption
+                 int keyLength = 128;
+                 AccessPermission ap = new AccessPermission();
 
-            StandardProtectionPolicy spp = new  StandardProtectionPolicy(pdfPass, pdfPass, ap);
-            spp.setEncryptionKeyLength(keyLength);
-            spp.setPermissions(ap);
-            document.protect(spp);*/
+                 StandardProtectionPolicy spp = new StandardProtectionPolicy(pdfPass, pdfPass, ap);
+                 spp.setEncryptionKeyLength(keyLength);
+                 spp.setPermissions(ap);
+                 document.protect(spp);
+            } else {
+                Toast.makeText(this, "Note: PDF encryption is off", Toast.LENGTH_LONG).show();
+            }
 
-            //Save file with todays date
+            //save file with todays date
             SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");
             String path = root.getAbsolutePath() + "/VMGeneratedDoc" + sdfFile.format(date) + ".pdf";
             document.save(path);
@@ -303,7 +309,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();
         Random rnd = new Random();
-        while (salt.length() < 5) { // length of the random string.
+        while (salt.length() < 5) { // length of rand str todo: make editable in settings (possibly minimum requirement?)
             int index = (int) (rnd.nextFloat() * SALTCHARS.length());
             salt.append(SALTCHARS.charAt(index));
         }

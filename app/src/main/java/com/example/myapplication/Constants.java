@@ -8,4 +8,5 @@ public class Constants {
     public static Bitmap photoFinishBitmap3 = null;
     public static Bitmap photoFinishBitmap4 = null;
     public static Boolean noPictures = false;
+    public static Boolean encryptPDF = false;
 }

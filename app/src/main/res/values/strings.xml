@@ -40,4 +40,7 @@
     <string name="sendCopyToLineManager">Send copy to line manager</string>
     <string name="lineManagerEmail">Line manager email</string>
     <string name="encryptPDF">Encrypt PDF</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

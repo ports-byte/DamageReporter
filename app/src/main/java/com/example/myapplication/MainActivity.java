@@ -2,38 +2,40 @@ package com.example.myapplication;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.widget.*;
-import androidx.appcompat.app.AlertDialog;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.*;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import static com.example.myapplication.Constants.noPictures;
 
+
 /**
- * DONE: Correct permissions added for URI access for download folder (removed strictmode)
+ * DONE: Correct permissions added for URI access for download directory (removed strictmode)
  *       Added encryption option
  *       Removed redundant stuff
+ *       Back buttons for every activity
+ *       Settings works somewhat - accepts encrypt pdf but strange behaviour with having off then after generating pdf, it sets to true after going back to the main form ?
  *
  * todo: Correct the layout of the pdf so that words arent cut off at the end of the line
+ * todo: fix the auto enable on encrypt pdf (not dire, users only use once. default value is set to false on xml and constants)
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String EXTRA_MESSAGE = "";
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    String dmgDescription = "Description of the damage";
-    Bitmap imageBitmap, imageBitmap2, imageBitmap3;
+    Bitmap imageBitmap;
     ImageView imageView, imageView2, imageView3, imageView4;
-    byte[] arr;
-    int c = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +54,6 @@ public class MainActivity extends AppCompatActivity {
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
 
-        // This is where we should replace with the camera action
-        // make sure the send button is not opaque before pictures are taken
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,6 +68,31 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        setupSharedPreferences();
+    }
+
+    //setup preferences
+    private void setupSharedPreferences() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    public void encryptPDF(boolean encrypt_pdf) {
+        if (encrypt_pdf == true) {
+            Constants.encryptPDF =true;
+            Toast.makeText(this, "Encrypt PDF has been turned on", Toast.LENGTH_SHORT).show();
+        } else {
+            Constants.encryptPDF = false;
+            Toast.makeText(this, "Encrypt PDF has been turned off", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals("encrypt_pdf")) {
+            encryptPDF(sharedPreferences.getBoolean("encrypt_pdf", false));
+        }
     }
 
     @Override
@@ -106,21 +131,11 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Error " + f, Toast.LENGTH_LONG).show();
         }
     }
-    /*@Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.aboutMenuIttem:
-                AboutActivity();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }*/
     public void checkFields(View view) {
-        EditText engineerEmail = (EditText) findViewById(R.id.engineerEmail);
-        EditText engineerName = (EditText) findViewById(R.id.engineerName);
-        EditText engineerDescription = (EditText) findViewById(R.id.engineerDescription);
-        EditText address = (EditText) findViewById(R.id.address);
-        Spinner incidentType = (Spinner) findViewById(R.id.spinner);
+        EditText engineerEmail = findViewById(R.id.engineerEmail);
+        EditText engineerName = findViewById(R.id.engineerName);
+        EditText engineerDescription = findViewById(R.id.engineerDescription);
+        EditText address = findViewById(R.id.address);
 
         //convert to string to check if the fields are empty
         String engEmail = engineerEmail.getText().toString();
@@ -132,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_LONG).show();
         } else {
             if (imageView == null) {
-                //Toast.makeText(this, "No pictures attached! Are you sure you want to continue", Toast.LENGTH_LONG).show();
                 new AlertDialog.Builder(this)
                         .setTitle("No pictures attached!")
                         .setMessage("There aren't any pictures attached to this report. Are you sure you want to proceed?")
@@ -158,11 +172,11 @@ public class MainActivity extends AppCompatActivity {
         //todo add spaces for readability on submit
         try {
             Intent intent = new Intent(this, DisplayMessageActivity.class);
-            EditText engineerEmail = (EditText) findViewById(R.id.engineerEmail);
-            EditText engineerName = (EditText) findViewById(R.id.engineerName);
-            EditText engineerDescription = (EditText) findViewById(R.id.engineerDescription);
-            EditText address = (EditText) findViewById(R.id.address);
-            Spinner incidentType = (Spinner) findViewById(R.id.spinner);
+            EditText engineerEmail =findViewById(R.id.engineerEmail);
+            EditText engineerName = findViewById(R.id.engineerName);
+            EditText engineerDescription = findViewById(R.id.engineerDescription);
+            EditText address = findViewById(R.id.address);
+            Spinner incidentType = findViewById(R.id.spinner);
             String strEmail = engineerEmail.getText().toString();
             String strName = engineerName.getText().toString();
             String strAddrTemp = address.getText().toString(); // remove return characters (errors with font glyphs)
@@ -185,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        // Inflate the menu; this adds items to the action bar if it is present
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -201,8 +215,10 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Toast.makeText(this, "Attempting open of id: " + id, Toast.LENGTH_LONG);
-            Intent intent = new Intent(this, Settings.class);
-            startActivity(intent);
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
+
         }
         if (id == R.id.aboutMenuIttem) {
             Toast.makeText(this, "Attempting open of id: " + id, Toast.LENGTH_LONG);

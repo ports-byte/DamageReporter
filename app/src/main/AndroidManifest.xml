@@ -7,22 +7,31 @@
             android:required="false"/>
 
     <application
-            android:allowBackup="true"
+            android:allowBackup="false"
             android:icon="@mipmap/exclogo"
             android:label="@string/appName"
             android:roundIcon="@mipmap/exclogo_round"
             android:supportsRtl="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:theme="@style/Theme.AppCompat">
         <activity
-                android:name="com.example.myapplication.Settings"
-                android:label="@string/title_activity_settings"
-                android:theme="@style/NoActionBar">
+                android:name=".SettingsActivity"
+                android:label="Settings"
+                android:launchMode="singleTop"
+                android:parentActivityName=".MainActivity"
+                android:theme="@style/Theme.AppCompat">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.myapplication.MainActivity"/>
         </activity>
         <activity
-                android:name="com.example.myapplication.AboutActivity"
+                android:name=".AboutActivity"
                 android:label="@string/about"
-                android:parentActivityName="com.example.myapplication.MainActivity"
-                android:theme="@style/NoActionBar">
+                android:launchMode="singleTop"
+                android:parentActivityName=".MainActivity"
+                android:theme="@style/Theme.AppCompat">
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.example.myapplication.MainActivity" />
         </activity>
 
         <provider
@@ -36,15 +45,17 @@
         </provider>
 
         <activity
-                android:name="com.example.myapplication.DisplayMessageActivity"
-                android:parentActivityName="com.example.myapplication.MainActivity">
+                android:name=".DisplayMessageActivity"
+                android:launchMode="singleTop"
+                android:parentActivityName=".MainActivity">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value="com.example.myapplication.MainActivity"/>
         </activity>
         <activity
-                android:name="com.example.myapplication.MainActivity"
+                android:name=".MainActivity"
                 android:label="@string/appName"
+                android:launchMode="singleTop"
                 android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
