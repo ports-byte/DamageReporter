@@ -13,21 +13,22 @@ import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreferenceCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import static com.example.myapplication.Constants.noPictures;
+import static com.example.myapplication.Constants.*;
 
 
 /**
  * DONE: Correct permissions added for URI access for download directory (removed strictmode)
- *       Added encryption option
- *       Removed redundant stuff
- *       Back buttons for every activity
- *       Settings works somewhat - accepts encrypt pdf but strange behaviour with having off then after generating pdf, it sets to true after going back to the main form ?
+ *       Added encryption, option to delete files after use and include an additional email to send to (line manager)
  *
  * todo: Correct the layout of the pdf so that words arent cut off at the end of the line
- * todo: fix the auto enable on encrypt pdf (not dire, users only use once. default value is set to false on xml and constants)
+ * todo: fix the auto enable on encrypt pdf FIXED
+ * todo: Prevent commas from being added on post code and address
  */
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -75,23 +76,33 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private void setupSharedPreferences() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-    }
-
-    public void encryptPDF(boolean encrypt_pdf) {
-        if (encrypt_pdf == true) {
-            Constants.encryptPDF =true;
-            Toast.makeText(this, "Encrypt PDF has been turned on", Toast.LENGTH_SHORT).show();
-        } else {
-            Constants.encryptPDF = false;
-            Toast.makeText(this, "Encrypt PDF has been turned off", Toast.LENGTH_SHORT).show();
-        }
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
+        lineManagerEmail = sharedPreferences.getString("lineEmailText_key", "null");
 
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals("encrypt_pdf")) {
-            encryptPDF(sharedPreferences.getBoolean("encrypt_pdf", false));
+            encryptPDF(sharedPreferences.getBoolean("encrypt_pdf", true));
+        }
+
+        if (key.equals("lineEmailText_key")) {
+            Toast.makeText(this, "Editing line manager email: " + lineManagerEmail, Toast.LENGTH_SHORT).show();
+        }
+        if (key.equals("purgePDF_key")) {
+            purgePDF = sharedPreferences.getBoolean("purgePDF_key", true);
+            Toast.makeText(this, "purge: " + purgePDF, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+   public void encryptPDF(boolean encrypt_pdf) {
+        if (encrypt_pdf == true) {
+            Constants.encryptPDF = true;
+            Toast.makeText(this, "Encrypt PDF has been turned on", Toast.LENGTH_SHORT).show();
+        } else {
+            Constants.encryptPDF = false;
+            Toast.makeText(this, "Encrypt PDF has been turned off", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -116,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     imageView2 = findViewById(R.id.imageView2);
                     imageView2.setImageBitmap(imageBitmap);
                     Constants.photoFinishBitmap2 = imageBitmap;
-                } else if (imageView2 == null && imageView3 == null && imageView == null) {
+                } else if (imageView2 == null && imageView3 == null && imageView == null) { //set to photo 1
                     imageBitmap = (Bitmap) extras.get("data");
                     imageView = findViewById(R.id.imageView);
                     imageView.setImageBitmap(imageBitmap);
@@ -126,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 }
                 // try to pass it to next activity - if it fails just save to a directory and grab it again
                 //arr = imageBitmap.getNinePatchChunk();
+
             }
         } catch (Exception f) {
             Toast.makeText(this, "Error " + f, Toast.LENGTH_LONG).show();
@@ -218,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
-
         }
         if (id == R.id.aboutMenuIttem) {
             Toast.makeText(this, "Attempting open of id: " + id, Toast.LENGTH_LONG);

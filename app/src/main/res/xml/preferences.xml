@@ -5,19 +5,23 @@
 
     </PreferenceCategory>
     <SwitchPreferenceCompat
-            android:defaultValue="false"
-            android:title="Encrypt PDF" android:key="encrypt_pdf" app:defaultValue="false"
+            android:title="Encrypt PDF" android:key="encrypt_pdf" app:defaultValue="false" android:defaultValue="false"
             app:summary="Turns on encryption when generating the file. Password is automatically added to the email."
-            android:id="@+id/darkMode"/>
+            android:id="@+id/encryptPDF"/>
     <PreferenceCategory
             android:title="Administration">
 
     </PreferenceCategory>
     <CheckBoxPreference
             android:defaultValue="false"
-            android:title="Include line manager" android:key="check_box_preference_1"/>
+            android:title="Include line manager" android:key="lineEmailCheck_key"/>
+    <EditTextPreference
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:dependency="lineEmailCheck_key"
+            android:title="@string/lineManagerEmail" android:key="lineEmailText_key"/>
     <CheckBoxPreference
             android:defaultValue="true"
-            android:title="Delete files after sending" android:key="delete_files"/>
-
+            android:title="Delete files after sending" android:key="purgePDF_key"
+            android:summary="Purges PDF files after sending.  These are found in your downloads folder (Files -> Downloads)"/>
 </PreferenceScreen>

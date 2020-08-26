@@ -38,15 +38,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 
-import static com.example.myapplication.Constants.encryptPDF;
-import static com.example.myapplication.Constants.noPictures;
+import static com.example.myapplication.Constants.*;
 
 public class DisplayMessageActivity extends AppCompatActivity  {
     File root;
     AssetManager assetManager;
     TextView tv;
-    ArrayList<String> items = new ArrayList<String>(5);
+    ArrayList<String> items = new ArrayList<>(5);
     String finalItemsString = null;
+    String cleanFinalItemsString = null;
     String pdfPass = null;
 
     @Override
@@ -62,14 +62,15 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         //get intent that started this activity and extra the string (extra message)
         Intent intent = getIntent();
         finalItemsString = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+        cleanFinalItemsString = "\n" + finalItemsString.replace(";", "\n"); // this is only used to show a clear view of what the engineer is submitting
 
         //quickly generate a password to be used
         pdfPass = getSaltString();
 
         //capture the layout textview and set the string as its text
         TextView textView = findViewById(R.id.textView);
-        if (encryptPDF) { textView.setText("You are about to submit the following: " + finalItemsString + "\n\nPassword: " + pdfPass); }
-        else { textView.setText("You are about to submit the following: " + finalItemsString); }
+        if (encryptPDF) { textView.setText("You are about to submit the following: " + cleanFinalItemsString + "\nPassword: " + pdfPass); }
+        else { textView.setText("You are about to submit the following: " + cleanFinalItemsString); }
 
         setup(null);
     }
@@ -122,7 +123,12 @@ public class DisplayMessageActivity extends AppCompatActivity  {
 
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            String[] recipients = {"xyz@virginmedia.com"};
+            //String[] recipients = { "xyz@virginmedia.co.uk"};
+            //create arraylist to store multiple values, convert back to list to send on gmail
+            ArrayList<String> recipientsArrayList = new ArrayList<>();
+            recipientsArrayList.add("xyx@virginmedia.co.uk");
+            if (Constants.lineManagerEmailBool) { Toast.makeText(this, "linemanagerbool:" + Constants.lineManagerEmailBool + "lineManagerEmail:" + lineManagerEmail, Toast.LENGTH_LONG).show(); recipientsArrayList.add(lineManagerEmail);}
+            String[] recipients = recipientsArrayList.toArray(new String[recipientsArrayList.size()]);
             intent.putExtra(Intent.EXTRA_EMAIL, recipients);
             intent.putExtra(Intent.EXTRA_SUBJECT, "Report on fibre damage");
             if (encryptPDF) { intent.putExtra(Intent.EXTRA_TEXT, "Please see the attached PDF for a fibre damage report. \n\n Filename: " + filename + "\n\n  Password: " + pdfPass); }
@@ -130,9 +136,23 @@ public class DisplayMessageActivity extends AppCompatActivity  {
             intent.putExtra(Intent.EXTRA_CC, "ccAddress@virginmedia.co.uk"); // doesn't work
             intent.putExtra(Intent.EXTRA_STREAM, path);
             intent.setType("text/html");
-            startActivity(Intent.createChooser(intent, "Choose an app to send the report from (i.e. Boxer)"));
+            startActivityForResult(Intent.createChooser(intent, "Choose an app to send the report from (i.e. Boxer)"), 1);
+
         } catch (Exception f) {
             Toast.makeText(this, "Couldn't compose a mail. Error: " + f, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == 1) {
+            if (resultCode==RESULT_OK) {
+                if (purgePDF) {
+                    Toast.makeText(this, "Successfully sent mail. Purging PDF file...", Toast.LENGTH_LONG).show();
+                } else {
+                    tv.setText("Successfully sent the report!\n\nYou can now exit the app - there's nothing more for you to do. ");
+                }
+
+            }
         }
     }
 
@@ -157,7 +177,7 @@ public class DisplayMessageActivity extends AppCompatActivity  {
     }
 
     // creates pdf, save to a download directory
-    public void createPDF(View v) throws IOException {
+    public void createPDF(View v) {
         PDDocument document = new PDDocument();
         PDPage page = new PDPage();
         document.addPage(page);
@@ -257,7 +277,7 @@ public class DisplayMessageActivity extends AppCompatActivity  {
             contentStream.addRect(0, 250, 1000, 5);
             contentStream.fill();
 
-            if (noPictures != true) {
+            if (!noPictures) {
                 Bitmap image = Constants.photoFinishBitmap;
                 Bitmap image2 = Constants.photoFinishBitmap2;
                 Bitmap image3 = Constants.photoFinishBitmap3;
@@ -316,10 +336,5 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         String saltStr = salt.toString();
         return saltStr;
 
-    }
-
-    public ArrayList<String> getItems() {
-        this.getItems();
-        return items;
     }
 }
