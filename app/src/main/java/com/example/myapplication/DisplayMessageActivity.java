@@ -40,6 +40,14 @@ import java.util.Random;
 
 import static com.example.myapplication.Constants.*;
 
+/**
+ * This activity does the following:
+ *      Generates the PDF with the information from the previous activity
+ *      Allows users to view the PDF before sending it
+ *      Sends the mail through an intent
+ *      File deletion if requested by the user (remove PDF after successful mail send), !!THIS OPTION IS ENABLED BY DEFAULT!!
+ *
+ */
 public class DisplayMessageActivity extends AppCompatActivity  {
     File root;
     AssetManager assetManager;
@@ -75,6 +83,10 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         setup(null);
     }
 
+    /**
+     * Allows users to open the PDF before sending - finds the download directory, determines the date which in turn gives filename (i.e. VMGeneratedDoc01012020.pdf)
+     * @param v
+     */
     public void onClick(View v) {
         Date date = new Date();
         SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");
@@ -100,6 +112,11 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         }
     }
 
+    /**
+     * Intent to send the PDF to a specified mailbox as well as an additional mail if needed (i.e. line manager in options). Users can still add people once in the Boxer app
+     * Seeks if line manager and encryption option is enabled in preferences
+     * @param v
+     */
     public void send(View v) {
         try {
             if (ContextCompat.checkSelfPermission(DisplayMessageActivity.this,
@@ -115,10 +132,9 @@ public class DisplayMessageActivity extends AppCompatActivity  {
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
             String filename = "VMGeneratedDoc" + sdf.format(date) + ".pdf";
-            root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             assetManager = getAssets();
             SimpleDateFormat sdfFile = new SimpleDateFormat("ddMMyy");
-            File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdfFile.format(date) + ".pdf");  // -> filename = maven.pdf
+            File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdfFile.format(date) + ".pdf");
             Uri path = FileProvider.getUriForFile(DisplayMessageActivity.this, "com.example.myapplication.provider", pdfFile);
 
             Intent intent = new Intent(Intent.ACTION_SEND);
@@ -143,11 +159,22 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         }
     }
 
+    /**
+     * If the intent was successful in sending the mail, it comes to this method where it can delete the file if requested or simply give a success message
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == 1) {
             if (resultCode==RESULT_OK) {
                 if (purgePDF) {
-                    Toast.makeText(this, "Successfully sent mail. Purging PDF file...", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Successfully sent mail. Attempting to remove PDF file...", Toast.LENGTH_SHORT).show();
+                    try {
+                        purgePDFFiles();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     tv.setText("Successfully sent the report!\n\nYou can now exit the app - there's nothing more for you to do. ");
                 }
@@ -156,10 +183,31 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         }
     }
 
+    /**Setting: Remove PDF files on successful email send. Engineers can view the PDF in the sent mailbox if required.
+     * This is done to prevent clogging up the download directory as each file is named with today's date.
+     * @throws IOException
+     */
+    private void purgePDFFiles() throws IOException {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy");
+        File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdf.format(date) + ".pdf");  // -> filename = maven.pdf
+
+        if(pdfFile.exists()) {
+            pdfFile.getCanonicalFile().delete();
+            if(pdfFile.exists()){
+                getApplicationContext().deleteFile(pdfFile.getName()); //alternative delete method to ensure its removed
+            }
+            Toast.makeText(this, "File deleted!", Toast.LENGTH_LONG).show();
+            tv.setText("Successfully sent the report and removed the report from your device.\n\nYou can now exit the app - there's nothing more for you to do.");
+        } else {
+            Toast.makeText(this, "PDF file not detected. Perhaps it's been moved or deleted already?", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void setup(View v) {
         //enable android style asset loading
         PDFBoxResourceLoader.init(getApplicationContext());
-        // Find the root of the external storage
+        //find root of the external storage
         root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         assetManager = getAssets();
         tv = findViewById(R.id.tv);
@@ -176,7 +224,11 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         }
     }
 
-    // creates pdf, save to a download directory
+    /**
+     * Creates PDF with text, pictures and correct formatting from previous activity.
+     * Todo: Fix whitespace until newline especially in engineer description
+     * @param v
+     */
     public void createPDF(View v) {
         PDDocument document = new PDDocument();
         PDPage page = new PDPage();
@@ -205,9 +257,9 @@ public class DisplayMessageActivity extends AppCompatActivity  {
             PDFont font = PDType1Font.HELVETICA;
             PDPageContentStream contentStream;
 
-            // Define a content stream for adding to the PDF
+            // define a content stream for adding to the pdf
             contentStream = new PDPageContentStream(document, page);
-            /* Load in the taken photos */
+            // load in the taken photos
             InputStream in = assetManager.open("vmlogo.jpg");
             //draw vm logo
             PDImageXObject ximage = JPEGFactory.createFromStream(document, in);
@@ -230,7 +282,7 @@ public class DisplayMessageActivity extends AppCompatActivity  {
             overlay.overlay(overlayGuide);*/
 
 
-            // red rectangle
+            // red rectangle / line
             contentStream.setNonStrokingColor(204,0,0);
             contentStream.addRect(0, 700, 1000, 5);
             contentStream.fill();
@@ -325,6 +377,11 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         }
     }
 
+    /**
+     * Gets a simple salt for encrypting the PDF
+     * todo: Allow for editable password length (non fixed random length editable through preferences)
+     * @return
+     */
     protected String getSaltString() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();

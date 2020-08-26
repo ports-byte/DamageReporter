@@ -18,15 +18,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         try {
             setPreferencesFromResource(R.xml.preferences, rootKey);
-            /*SharedPreferences preferences = android.preference.PreferenceManager.getDefaultSharedPreferences(getActivity());
-            final SwitchPreferenceCompat switchPreference1 = (SwitchPreferenceCompat) findPreference("encrypt_pdf");
-            if (preferences.getBoolean("encrypt_pdf", false)) {
-                switchPreference1.setChecked(false);
-                Constants.encryptPDF = false;
-            } else {
-                Constants.encryptPDF = true;
-                switchPreference1.setChecked(true);
-            }*/
         } catch (Exception g) {
             Toast.makeText(null, "error" + g, Toast.LENGTH_LONG).show();
         }

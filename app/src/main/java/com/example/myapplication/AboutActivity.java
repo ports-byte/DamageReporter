@@ -11,6 +11,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+/**
+ * Activity that provides an interface for the user to report a bug if encountered.
+ * Has a floating action button that will take them to an email app (boxer) where they can report their problem
+ */
 public class AboutActivity extends AppCompatActivity {
     //todo save instance state of previous activity
 

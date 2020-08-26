@@ -13,10 +13,7 @@ import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.preference.CheckBoxPreference;
-import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceManager;
-import androidx.preference.SwitchPreferenceCompat;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import static com.example.myapplication.Constants.*;
@@ -27,10 +24,12 @@ import static com.example.myapplication.Constants.*;
  *       Added encryption, option to delete files after use and include an additional email to send to (line manager)
  *
  * todo: Correct the layout of the pdf so that words arent cut off at the end of the line
- * todo: fix the auto enable on encrypt pdf FIXED
  * todo: Prevent commas from being added on post code and address
  */
 
+/** @author Ben Fortune (@ports)
+ * Main activity for the app (initial screen). Provides texts fields for users to input to as well as request use of the camera to take pictures of damaged cables
+ */
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String EXTRA_MESSAGE = "";
@@ -72,7 +71,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         setupSharedPreferences();
     }
 
-    //setup preferences
+    /**
+     * Setup preferences for use in the wider app, current settings only accessible from the main activity so makes sense to have here
+     */
     private void setupSharedPreferences() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
@@ -96,6 +97,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    /**
+     * Testing purposes for preferences - todo: to be removed
+     * @param encrypt_pdf
+     */
    public void encryptPDF(boolean encrypt_pdf) {
         if (encrypt_pdf == true) {
             Constants.encryptPDF = true;
@@ -106,6 +111,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    /**
+     * After clicking the floating action button, the capture is set to an image view based on how many pictures have been taken so far.
+     * todo: allow user to select photo to remove and replace. Can only replace image4 as of currently
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -143,6 +155,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             Toast.makeText(this, "Error " + f, Toast.LENGTH_LONG).show();
         }
     }
+
+    /**
+     * Ensures all fields have been filled out to prevent nullpointerexceptions and ensure adequate data is provided to the 3rd party (i.e. no missing address)
+     * @param view
+     */
     public void checkFields(View view) {
         EditText engineerEmail = findViewById(R.id.engineerEmail);
         EditText engineerName = findViewById(R.id.engineerName);
@@ -179,6 +196,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    /**
+     * Sets up the handover to the next activity (DisplayMessageActivity), combining all text fields into an EXTRA_MESSAGE which can then be processed in the next one.
+     */
     public void sendMessage() {
         // stress the importance of adding pictures
         //todo add spaces for readability on submit
@@ -192,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             String strEmail = engineerEmail.getText().toString();
             String strName = engineerName.getText().toString();
             String strAddrTemp = address.getText().toString(); // remove return characters (errors with font glyphs)
-            String strAddr = strAddrTemp.replaceAll("(\\r|\\n|\\r\\n|\\s)+", ", ");
+            String strAddr = strAddrTemp.replaceAll("(\\r|\\n|\\r\\n|\\s)+", ", "); //todo: do a better job of detection. Engineers may use commas or return characters to input an address
             String strType = incidentType.getSelectedItem().toString();
             String strDescTemp = engineerDescription.getText().toString();
             String strDesc = strDescTemp.replaceAll("(\\r|\\n|\\r\\n)+", ". "); // 60 characters till line break needed.
@@ -205,10 +225,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
+    /**
+     * todo
+     * @param view
+     */
     public void selectPhoto(View view) {
 
     }
 
+    /**
+     * Handles menu options
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present

@@ -11,5 +11,5 @@ public class Constants {
     public static Boolean encryptPDF = false;
     public static Boolean lineManagerEmailBool = false;
     public static String lineManagerEmail = "";
-    public static Boolean purgePDF = false;
+    public static Boolean purgePDF = true;
 }

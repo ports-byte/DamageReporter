@@ -8,6 +8,10 @@ import androidx.core.app.NavUtils;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    /**
+     * Acts as a host for SettingsFragment. No stylesheet - uses that of preferences.xml
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             NavUtils.navigateUpFromSameTask(this);
-        } 
+        }
         return super.onOptionsItemSelected(item);
     }
 }
