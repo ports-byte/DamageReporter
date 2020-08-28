@@ -22,9 +22,11 @@ import static com.example.myapplication.Constants.*;
 /**
  * DONE: Correct permissions added for URI access for download directory (removed strictmode)
  *       Added encryption, option to delete files after use and include an additional email to send to (line manager)
+ *       Fixed email not being added
  *
  * todo: Correct the layout of the pdf so that words arent cut off at the end of the line
  * todo: Prevent commas from being added on post code and address
+ * todo: couldn't attach file. probably due to file deletion enabled and the activity deleting it after attempting to go back
  */
 
 /** @author Ben Fortune (@ports)
@@ -58,13 +60,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                   /*  Snackbar.make(view, "Launching camera", Snackbar.LENGTH_SHORT)
-                            .setAction("Action", null).show();*/
                 }
             }
         });
@@ -78,22 +76,22 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, true);
-        lineManagerEmail = sharedPreferences.getString("lineEmailText_key", "null");
-
+        lineManagerEmail = sharedPreferences.getString("lineEmailText_key", "");
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals("encrypt_pdf")) {
-            encryptPDF(sharedPreferences.getBoolean("encrypt_pdf", true));
-        }
-
-        if (key.equals("lineEmailText_key")) {
-            Toast.makeText(this, "Editing line manager email: " + lineManagerEmail, Toast.LENGTH_SHORT).show();
+        if (key.equals("encryptPDF_key")) {
+            encryptPDF(sharedPreferences.getBoolean("encryptPDF_key", true));
         }
         if (key.equals("purgePDF_key")) {
             purgePDF = sharedPreferences.getBoolean("purgePDF_key", true);
             Toast.makeText(this, "purge: " + purgePDF, Toast.LENGTH_SHORT).show();
+        }
+        //todo if selecting/deselecting and changing the line manager email field, it saves the previous value. Need to update upon back button, ok button on dialog or next on main activity
+        if (key.equals("lineEmailCheck_key")) {
+            lineManagerEmailBool = sharedPreferences.getBoolean("lineEmailCheck_key", true);
+            lineManagerEmail = sharedPreferences.getString("lineEmailText_key", "");
         }
     }
 
@@ -102,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      * @param encrypt_pdf
      */
    public void encryptPDF(boolean encrypt_pdf) {
-        if (encrypt_pdf == true) {
+        if (encrypt_pdf) {
             Constants.encryptPDF = true;
             Toast.makeText(this, "Encrypt PDF has been turned on", Toast.LENGTH_SHORT).show();
         } else {
@@ -156,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
     }
 
-    /**
+    /** Verification
      * Ensures all fields have been filled out to prevent nullpointerexceptions and ensure adequate data is provided to the 3rd party (i.e. no missing address)
      * @param view
      */
