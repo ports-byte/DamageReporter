@@ -137,13 +137,20 @@ public class DisplayMessageActivity extends AppCompatActivity  {
             File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdfFile.format(date) + ".pdf");
             Uri path = FileProvider.getUriForFile(DisplayMessageActivity.this, "com.example.myapplication.provider", pdfFile);
 
+            // attempts to regen pdf
+            if (!pdfFile.exists()) { Toast.makeText(this, "PDF doesn't exist. Maybe already purged? Attempting to create a new one...", Toast.LENGTH_LONG).show(); createPDF(v); }
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             //String[] recipients = { "xyz@virginmedia.co.uk"};
             //create arraylist to store multiple values, convert back to list to send on gmail
             ArrayList<String> recipientsArrayList = new ArrayList<>();
             recipientsArrayList.add("xyx@virginmedia.co.uk");
-            if (Constants.lineManagerEmailBool) { Toast.makeText(this, "linemanagerbool:" + Constants.lineManagerEmailBool + "lineManagerEmail:" + lineManagerEmail, Toast.LENGTH_LONG).show(); recipientsArrayList.add(lineManagerEmail);}
+            if (Constants.lineManagerEmailBool) {
+                Toast.makeText(this, "linemanagerbool:" + Constants.lineManagerEmailBool + "lineManagerEmail:" + lineManagerEmail, Toast.LENGTH_LONG).show();
+                recipientsArrayList.add(lineManagerEmail);
+            } else { //testing purposes only
+                Toast.makeText(this, "line manager bool is false or null: " + lineManagerEmailBool + " linemanageremail: " + lineManagerEmail, Toast.LENGTH_LONG).show();
+            }
             String[] recipients = recipientsArrayList.toArray(new String[recipientsArrayList.size()]);
             intent.putExtra(Intent.EXTRA_EMAIL, recipients);
             intent.putExtra(Intent.EXTRA_SUBJECT, "Report on fibre damage");
@@ -185,6 +192,8 @@ public class DisplayMessageActivity extends AppCompatActivity  {
 
     /**Setting: Remove PDF files on successful email send. Engineers can view the PDF in the sent mailbox if required.
      * This is done to prevent clogging up the download directory as each file is named with today's date.
+     * TODO: Temporarily disabled, need new method to remove files after sending. Emails end up sending without file attached as activityresult doesnt check if mail sent successfully
+     * todo: nothing in the intent data indicates if it was ok. might have to move to settings and mass delete upon user request
      * @throws IOException
      */
     private void purgePDFFiles() throws IOException {
@@ -193,9 +202,9 @@ public class DisplayMessageActivity extends AppCompatActivity  {
         File pdfFile = new File(Environment.getExternalStorageDirectory() + "/Download/VMGeneratedDoc" + sdf.format(date) + ".pdf");  // -> filename = maven.pdf
 
         if(pdfFile.exists()) {
-            pdfFile.getCanonicalFile().delete();
+            //pdfFile.getCanonicalFile().delete();
             if(pdfFile.exists()){
-                getApplicationContext().deleteFile(pdfFile.getName()); //alternative delete method to ensure its removed
+                //getApplicationContext().deleteFile(pdfFile.getName()); //alternative delete method to ensure its removed
             }
             Toast.makeText(this, "File deleted!", Toast.LENGTH_LONG).show();
             tv.setText("Successfully sent the report and removed the report from your device.\n\nYou can now exit the app - there's nothing more for you to do.");

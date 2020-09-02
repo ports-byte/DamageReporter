@@ -23,13 +23,13 @@ import static com.example.myapplication.Constants.*;
  * DONE: Correct permissions added for URI access for download directory (removed strictmode)
  *       Added encryption, option to delete files after use and include an additional email to send to (line manager)
  *       Fixed email not being added
+ *       Address doesn't add commas on a space
+ *       Regenerates PDF if attempting to send again (i.e. sent to recipient but needs to send another or to additional people after PDF has been purged). Done by if(pdffile.exists()) createPDF
  *
  * todo: Correct the layout of the pdf so that words arent cut off at the end of the line
- * todo: Prevent commas from being added on post code and address
- * todo: couldn't attach file. probably due to file deletion enabled and the activity deleting it after attempting to go back
- */
+ * /
 
-/** @author Ben Fortune (@ports)
+/** @author Ben Fortune (@ports) @v0.8
  * Main activity for the app (initial screen). Provides texts fields for users to input to as well as request use of the camera to take pictures of damaged cables
  */
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         setSupportActionBar(toolbar);
 
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        Spinner spinner = findViewById(R.id.spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.itemsArray, android.R.layout.simple_spinner_item);
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals("encryptPDF_key")) {
-            encryptPDF(sharedPreferences.getBoolean("encryptPDF_key", true));
+            Constants.encryptPDF = sharedPreferences.getBoolean("encryptPDF_key", true);
         }
         if (key.equals("purgePDF_key")) {
             purgePDF = sharedPreferences.getBoolean("purgePDF_key", true);
@@ -92,20 +92,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (key.equals("lineEmailCheck_key")) {
             lineManagerEmailBool = sharedPreferences.getBoolean("lineEmailCheck_key", true);
             lineManagerEmail = sharedPreferences.getString("lineEmailText_key", "");
-        }
-    }
-
-    /**
-     * Testing purposes for preferences - todo: to be removed
-     * @param encrypt_pdf
-     */
-   public void encryptPDF(boolean encrypt_pdf) {
-        if (encrypt_pdf) {
-            Constants.encryptPDF = true;
-            Toast.makeText(this, "Encrypt PDF has been turned on", Toast.LENGTH_SHORT).show();
-        } else {
-            Constants.encryptPDF = false;
-            Toast.makeText(this, "Encrypt PDF has been turned off", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -210,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             String strEmail = engineerEmail.getText().toString();
             String strName = engineerName.getText().toString();
             String strAddrTemp = address.getText().toString(); // remove return characters (errors with font glyphs)
-            String strAddr = strAddrTemp.replaceAll("(\\r|\\n|\\r\\n|\\s)+", ", "); //todo: do a better job of detection. Engineers may use commas or return characters to input an address
+            String strAddr = strAddrTemp.replaceAll("(\\r|\\n|\\r\\n)+", ", "); // Backslash s indicates a space - backslash r and n indicate break characters
             String strType = incidentType.getSelectedItem().toString();
             String strDescTemp = engineerDescription.getText().toString();
             String strDesc = strDescTemp.replaceAll("(\\r|\\n|\\r\\n)+", ". "); // 60 characters till line break needed.
